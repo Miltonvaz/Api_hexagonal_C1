@@ -84,8 +84,9 @@ func (m *MySQL) GetById(id int) (entities.Client, error) {
 
 
 func (m *MySQL) Edit(client entities.Client) error {
-	query := "UPDATE clients SET name = ?, last_name = ?, email = ?,password =?, cellphone = ?, age = ? WHERE id = ?"
-	_, err := m.conn.Exec(query, client.Name, client.LastName, client.Email, client.Cellphone, client.Age, client.ID, client.Password)
+	query := "UPDATE clients SET name = ?, last_name = ?, email = ?, password = ?, cellphone = ?, age = ? WHERE id = ?"
+_, err := m.conn.Exec(query, client.Name, client.LastName, client.Email, client.Password, client.Cellphone, client.Age, client.ID)
+
 	if err != nil {
 		return fmt.Errorf("failed to update client: %v", err)
 	}
