@@ -12,36 +12,37 @@ import (
 
 func main() {
 
-	createClientController, viewClientController, editClientController, deleteClientController, viewByIdClientController, authController, err := dependenciesc.Init()
+	createClientController, viewClientController, editClientController, deleteClientController, viewByIdClientController, authController, getlastNameController, err := dependenciesc.Init()
 	if err != nil {
 		log.Fatalf("Error initializing client dependencies: %v", err)
 		return
 	}
 
-	createCarController, viewCarController,deleteCarController, updateCarController, viewByIdCarController,  err := dependencies.InitCars()
+	createCarController, viewCarController, deleteCarController, updateCarController, viewByIdCarController, getByFuelCarController, err := dependencies.InitCars()
 	if err != nil {
 		log.Fatalf("Error initializing car dependencies: %v", err)
 		return
 	}
 
-	
 	r := gin.Default()
 
 	routes.RegisterCarRoutes(r,
 		createCarController,
 		viewCarController,
-		viewByIdCarController, 
+		viewByIdCarController,
 		updateCarController,
-		deleteCarController,  
+		deleteCarController,
+		getByFuelCarController,
 	)
-	
-	routesc.RegisterClientRoutes(r, 
+
+	routesc.RegisterClientRoutes(r,
 		createClientController,
 		viewClientController,
 		editClientController,
 		deleteClientController,
 		viewByIdClientController,
 		authController,
+		getlastNameController,
 	)
 
 	err = r.Run(":8080")

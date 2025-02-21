@@ -15,16 +15,14 @@ func NewMySQL(conn *sql.DB) *MySQL {
 	return &MySQL{conn: conn}
 }
 
-
-
 func (m *MySQL) Save(client entities.Client) error {
-    query := `INSERT INTO clients (name, last_name, email, cellphone, age, password) 
+	query := `INSERT INTO clients (name, last_name, email, cellphone, age, password) 
               VALUES (?, ?, ?, ?, ?, ?)`
-    _, err := m.conn.Exec(query, client.Name, client.LastName, client.Email, client.Cellphone, client.Age, client.Password)
-    if err != nil {
-        return fmt.Errorf("failed to save client: %v", err)
-    }
-    return nil
+	_, err := m.conn.Exec(query, client.Name, client.LastName, client.Email, client.Cellphone, client.Age, client.Password)
+	if err != nil {
+		return fmt.Errorf("failed to save client: %v", err)
+	}
+	return nil
 }
 
 func (m *MySQL) GetByEmail(email string) (entities.Client, error) {
@@ -66,6 +64,30 @@ func (m *MySQL) GetAll() ([]entities.Client, error) {
 	return clients, nil
 }
 
+func (m *MySQL) GetLastName(lastName string) ([]entities.Client, error) {
+	query := "SELECT * FROM clinet WHERE last_name = ?"
+	rows, err := m.conn.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve clients: %v", err)
+	}
+	defer rows.Close()
+
+	var clients []entities.Client
+	for rows.Next() {
+		var client entities.Client
+		err := rows.Scan(&client.ID, &client.Name, &client.LastName, &client.Email, &client.Cellphone, &client.Age, &client.Password)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan car row: %v", err)
+		}
+		clients = append(clients, client)
+	}
+
+	if len(clients) == 0 {
+		return nil, fmt.Errorf("no cars found with fuel type: %s", lastName)
+	}
+
+	return clients, nil
+}
 
 func (m *MySQL) GetById(id int) (entities.Client, error) {
 	query := "SELECT * FROM clients WHERE id = ?"
@@ -82,10 +104,9 @@ func (m *MySQL) GetById(id int) (entities.Client, error) {
 	return client, nil
 }
 
-
 func (m *MySQL) Edit(client entities.Client) error {
 	query := "UPDATE clients SET name = ?, last_name = ?, email = ?, password = ?, cellphone = ?, age = ? WHERE id = ?"
-_, err := m.conn.Exec(query, client.Name, client.LastName, client.Email, client.Password, client.Cellphone, client.Age, client.ID)
+	_, err := m.conn.Exec(query, client.Name, client.LastName, client.Email, client.Password, client.Cellphone, client.Age, client.ID)
 
 	if err != nil {
 		return fmt.Errorf("failed to update client: %v", err)

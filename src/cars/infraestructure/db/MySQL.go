@@ -50,6 +50,30 @@ func (m *MySQL) GetAll() ([]entities.Car, error) {
 
 	return cars, nil
 }
+func (m *MySQL) GetByFuel(fuel string) ([]entities.Car, error) {
+	query := "SELECT * FROM cars WHERE fuel_type = ?"
+	rows, err := m.conn.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to retrieve cars: %v", err)
+	}
+	defer rows.Close()
+
+	var cars []entities.Car
+	for rows.Next() {
+		var car entities.Car
+		err := rows.Scan(&car.ID, &car.Make, &car.Model, &car.Year, &car.Mileage, &car.FuelType)
+		if err != nil {
+			return nil, fmt.Errorf("failed to scan car row: %v", err)
+		}
+		cars = append(cars, car)
+	}
+
+	if len(cars) == 0 {
+		return nil, fmt.Errorf("no cars found with fuel type: %s", fuel)
+	}
+
+	return cars, nil
+}
 
 func (m *MySQL) GetById(id int) (entities.Car, error) {
 	query := "SELECT * FROM cars WHERE id = ?"

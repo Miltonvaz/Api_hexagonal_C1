@@ -8,4 +8,5 @@ type ICar interface {
 	GetById(id int) (entities.Car, error)
 	Edit(entities.Car) error
 	Delete(id int) error
+	GetByFuel(fuel string) ([]entities.Car, error)
 }
