@@ -24,14 +24,12 @@ func (ac *AuthController) Execute(c *gin.Context) {
         c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid input"})
         return
     }
-
-    // Intentar hacer login con los datos proporcionados
     token, err := ac.authService.Login(input.Email, input.Password)
     if err != nil {
         c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
         return
     }
 
-    // Devolver el token JWT en la respuesta
     c.JSON(http.StatusOK, gin.H{"token": token})
 }
+
