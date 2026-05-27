@@ -2,6 +2,7 @@ package routes
 
 import (
 	"ejercicio1/src/cars/infraestructure/controllers"
+	"ejercicio1/src/core/security"
 	"github.com/gin-gonic/gin"
 )
 
@@ -13,10 +14,10 @@ func RegisterCarRoutes(r *gin.Engine,
 	deleteCarController *controllers.DeleteCarController,
 	getByFuelController *controllers.GetBYfuelController,
 ) {
-	r.POST("/cars", createCarController.Execute)
-	r.GET("/cars", viewCarController.Execute)
-	r.GET("/cars/:id", viewByIdCarController.Execute)
-	r.PUT("/cars/:id", updateCarController.Execute)
-	r.DELETE("/cars/:id", deleteCarController.Execute)
-	r.GET("/cars/fuel/:fuel", getByFuelController.Execute)
+	r.POST("/cars", security.JWTMiddleware(), createCarController.Execute)
+	r.GET("/cars", security.JWTMiddleware(), viewCarController.Execute)
+	r.GET("/cars/:id", security.JWTMiddleware(), viewByIdCarController.Execute)
+	r.PUT("/cars/:id", security.JWTMiddleware(), updateCarController.Execute)
+	r.DELETE("/cars/:id", security.JWTMiddleware(), deleteCarController.Execute)
+	r.GET("/cars/fuel/:fuel", security.JWTMiddleware(), getByFuelController.Execute)
 }
