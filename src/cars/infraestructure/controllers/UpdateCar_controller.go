@@ -13,23 +13,26 @@ type UpdateCarController struct {
 	usecase application.UpdateCar
 }
 
-func NewUpdateCarController(usecase application.UpdateCar) *UpdateCarController{
+func NewUpdateCarController(usecase application.UpdateCar) *UpdateCarController {
 	return &UpdateCarController{usecase: usecase}
 }
 
-func (uc_c *UpdateCarController)Execute(c *gin.Context){
+func (uc_c *UpdateCarController) Execute(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
-    if err != nil {
-        c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
-        return
-    }
-	var request struct{
-		ID            int32   `json:"id"`          
-    	Make          string  `json:"make"`       
-    	Model         string  `json:"model"`       
-    	Year          int32   `json:"year"`       
-    	Mileage       int32   `json:"mileage"`    
-    	FuelType      string  `json:"fuel_type"` 
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid ID"})
+		return
+	}
+	var request struct {
+		ID       int32   `json:"id"`
+		Make     string  `json:"make"`
+		Model    string  `json:"model"`
+		Year     int32   `json:"year"`
+		Mileage  int32   `json:"mileage"`
+		FuelType string  `json:"fuel_type"`
+		Price    float64 `json:"price"`
+		Status   string  `json:"status"`
+		Color    string  `json:"color"`
 	}
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -38,21 +41,23 @@ func (uc_c *UpdateCarController)Execute(c *gin.Context){
 	}
 
 	car := entities.Car{
-		ID:        int32(id), 
-		Make:      request.Make,
-		Model:     request.Model,
-		Year:      request.Year,
-		Mileage:   request.Mileage,
-		FuelType:  request.FuelType,
+		ID:       int32(id),
+		Make:     request.Make,
+		Model:    request.Model,
+		Year:     request.Year,
+		Mileage:  request.Mileage,
+		FuelType: request.FuelType,
+		Price:    request.Price,
+		Status:   request.Status,
+		Color:    request.Color,
 	}
-	
+
 	err = uc_c.usecase.Execute(car)
-    if err != nil {
-        c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-        return
-    }
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
 
-
-	c.JSON(http.StatusCreated, gin.H{"car":car})
+	c.JSON(http.StatusCreated, gin.H{"car": car})
 
 }
