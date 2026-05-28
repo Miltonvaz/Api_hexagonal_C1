@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/cloudinary/cloudinary-go/v2"
 	"github.com/cloudinary/cloudinary-go/v2/api/uploader"
@@ -22,45 +23,47 @@ func NewCreateCarController(usecase application.CreateCar) *CreateCarController 
 }
 
 func (cc_c *CreateCarController) Execute(c *gin.Context) {
-	// Expect multipart/form-data with optional `image` file and form fields
-	make := c.PostForm("make")
-	model := c.PostForm("model")
-	yearStr := c.PostForm("year")
-	mileageStr := c.PostForm("mileage")
-	fuelType := c.PostForm("fuel_type")
+	car := entities.Car{}
 
-	var year int32
-	if y, err := strconv.Atoi(yearStr); err == nil {
-		year = int32(y)
-	}
-	var mileage int32
-	if m, err := strconv.Atoi(mileageStr); err == nil {
-		mileage = int32(m)
-	}
+	contentType := c.ContentType()
+	if strings.Contains(contentType, "application/json") {
+		if err := c.ShouldBindJSON(&car); err != nil {
+			c.JSON(http.StatusBadRequest, gin.H{"error": "Datos inválidos: " + err.Error()})
+			return
+		}
+	} else {
+		car.Make = c.PostForm("make")
+		car.Model = c.PostForm("model")
+		car.FuelType = c.PostForm("fuel_type")
+		car.ImageURL = c.PostForm("image_url")
 
-	imageURL := ""
-	fileHeader, err := c.FormFile("image")
-	if err == nil && fileHeader != nil {
-		file, err := fileHeader.Open()
-		if err == nil {
-			defer file.Close()
-			cld, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
-			if err == nil {
-				uploadRes, err := cld.Upload.Upload(context.Background(), file, uploader.UploadParams{Folder: "cars"})
-				if err == nil {
-					imageURL = uploadRes.SecureURL
-				}
+		if yearStr := c.PostForm("year"); yearStr != "" {
+			if y, err := strconv.Atoi(yearStr); err == nil {
+				car.Year = int32(y)
+			}
+		}
+		if mileageStr := c.PostForm("mileage"); mileageStr != "" {
+			if m, err := strconv.Atoi(mileageStr); err == nil {
+				car.Mileage = int32(m)
 			}
 		}
 	}
 
-	car := entities.Car{
-		Make:     make,
-		Model:    model,
-		Year:     year,
-		Mileage:  mileage,
-		FuelType: fuelType,
-		ImageURL: imageURL,
+	if car.ImageURL == "" {
+		fileHeader, err := c.FormFile("image")
+		if err == nil && fileHeader != nil {
+			file, err := fileHeader.Open()
+			if err == nil {
+				defer file.Close()
+				cld, err := cloudinary.NewFromURL(os.Getenv("CLOUDINARY_URL"))
+				if err == nil {
+					uploadRes, err := cld.Upload.Upload(context.Background(), file, uploader.UploadParams{Folder: "cars"})
+					if err == nil {
+						car.ImageURL = uploadRes.SecureURL
+					}
+				}
+			}
+		}
 	}
 
 	createdCar, err := cc_c.usecase.Execute(car)
